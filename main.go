@@ -1,10 +1,12 @@
 package main
 
 import (
-	//    "encoding/json"
+	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -41,8 +43,39 @@ func (db *Database) Init(dsn string) (*bolt.DB, error) {
 	return db.db, err
 }
 
-func (db *Database) UpdateDocument(doc *Document) {
-	fmt.Printf("%v\n%v\n", db.db, doc)
+func (db *Database) UpdateDocument(doc *Document) error {
+	docjson, err := json.Marshal(doc)
+	if err != nil {
+		return err
+	}
+	err = db.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("documents"))
+		docid := new(bytes.Buffer)
+		docid.WriteString(doc.Id)
+		err = b.Put(docid.Bytes(), docjson)
+		if err != nil {
+			return err
+		}
+		docid.WriteString(strconv.Itoa(doc.Version))
+		err := b.Put(docid.Bytes(), docjson)
+		return err
+	})
+	return err
+}
+
+func (db *Database) GetDocument(id string, version ...int) (*Document, error) {
+	doc := Document{}
+	db.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("documents"))
+		docid := new(bytes.Buffer)
+		docid.WriteString(id)
+		if len(version) == 1 {
+			docid.WriteString(strconv.Itoa(version[0]))
+		}
+		err := json.Unmarshal(b.Get(docid.Bytes()), &doc)
+		return err
+	})
+	return &doc, nil
 }
 
 var database = new(Database)
@@ -73,7 +106,7 @@ func main() {
 	fmt.Println("# rhizome")
 	fmt.Printf("using database: %s\n", config.dsn)
 
-	doc := Document{
+	d1 := Document{
 		Id:      "1",
 		Title:   "Main",
 		Text:    "# hello, world",
@@ -82,5 +115,10 @@ func main() {
 		Created: time.Now(),
 		Updated: time.Now(),
 	}
-	database.UpdateDocument(&doc)
+	database.UpdateDocument(&d1)
+	d2, err := database.GetDocument("1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%v\n", d2)
 }
