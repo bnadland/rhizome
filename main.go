@@ -64,6 +64,7 @@ func (db *Database) UpdateDocument(doc *Document) error {
 }
 
 func (db *Database) GetDocument(id string, version ...int) (*Document, error) {
+	var docjson []byte
 	doc := Document{}
 	db.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("documents"))
@@ -72,10 +73,14 @@ func (db *Database) GetDocument(id string, version ...int) (*Document, error) {
 		if len(version) == 1 {
 			docid.WriteString(strconv.Itoa(version[0]))
 		}
-		err := json.Unmarshal(b.Get(docid.Bytes()), &doc)
-		return err
+		docjson = b.Get(docid.Bytes())
+		return nil
 	})
-	return &doc, nil
+	if docjson != nil {
+		err := json.Unmarshal(docjson, &doc)
+		return &doc, err
+	}
+	return nil, nil
 }
 
 var database = new(Database)
@@ -116,7 +121,7 @@ func main() {
 		Updated: time.Now(),
 	}
 	database.UpdateDocument(&d1)
-	d2, err := database.GetDocument("1")
+	d2, err := database.GetDocument("1", 1)
 	if err != nil {
 		log.Fatal(err)
 	}
