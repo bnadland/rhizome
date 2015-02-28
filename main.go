@@ -1,129 +1,74 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"flag"
+	"code.google.com/p/go-uuid/uuid"
 	"fmt"
+	"github.com/bmizerany/pat"
+	"github.com/jinzhu/gorm"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/microcosm-cc/bluemonday"
+	"github.com/russross/blackfriday"
 	"log"
-	"strconv"
+	"net/http"
 	"time"
-
-	"github.com/boltdb/bolt"
-	// "github.com/russross/blackfriday"
-	// "code.google.com/p/go-uuid/uuid"
 )
 
-type Config struct {
-	dsn string
+type Page struct {
+	Id        int
+	PageId    string
+	VersionId int
+	CmsPage   string
+	Content   string
+	Published time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt time.Time
 }
 
-var config = new(Config)
-
-type Database struct {
-	db *bolt.DB
+func getHtml(markdown string) string {
+	unsafe := blackfriday.MarkdownCommon([]byte(markdown))
+	return string(bluemonday.UGCPolicy().SanitizeBytes(unsafe))
 }
 
-func (db *Database) Init(dsn string) (*bolt.DB, error) {
-	boltdb, err := bolt.Open(dsn, 0600, &bolt.Options{Timeout: 1 * time.Second})
+func getDb() *gorm.DB {
+	db, err := gorm.Open("sqlite3", "rhizome.db")
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
-	db.db = boltdb
-
-	err = db.db.Update(func(tx *bolt.Tx) error {
-		for _, bucketname := range []string{"documents"} {
-			_, err := tx.CreateBucketIfNotExists([]byte(bucketname))
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-	return db.db, err
+	db.LogMode(true)
+	return &db
 }
 
-func (db *Database) UpdateDocument(doc *Document) error {
-	docjson, err := json.Marshal(doc)
-	if err != nil {
-		return err
+func getCmsPage(w http.ResponseWriter, req *http.Request) {
+	cmsPage := "/" + req.URL.Query().Get(":CmsPage")
+	page := &Page{}
+	db := getDb()
+
+	if db.Where("cms_page = ?", cmsPage).First(page).RecordNotFound() {
+		http.Error(w, "Page not found.", 404)
+		return
 	}
-	err = db.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("documents"))
-		docid := new(bytes.Buffer)
-		docid.WriteString(doc.Id)
-		err = b.Put(docid.Bytes(), docjson)
-		if err != nil {
-			return err
-		}
-		docid.WriteString(strconv.Itoa(doc.Version))
-		err := b.Put(docid.Bytes(), docjson)
-		return err
-	})
-	return err
-}
 
-func (db *Database) GetDocument(id string, version ...int) (*Document, error) {
-	var docjson []byte
-	doc := Document{}
-	db.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("documents"))
-		docid := new(bytes.Buffer)
-		docid.WriteString(id)
-		if len(version) == 1 {
-			docid.WriteString(strconv.Itoa(version[0]))
-		}
-		docjson = b.Get(docid.Bytes())
-		return nil
-	})
-	if docjson != nil {
-		err := json.Unmarshal(docjson, &doc)
-		return &doc, err
-	}
-	return nil, nil
-}
-
-var database = new(Database)
-
-type Document struct {
-	Id      string
-	Title   string
-	Text    string
-	Page    string
-	Version int
-	Created time.Time
-	Updated time.Time
+	fmt.Fprintf(w, getHtml(page.Content))
 }
 
 func main() {
-	// config
-	flag.StringVar(&config.dsn, "dsn", "rhizome.db", "database filename")
-	flag.Parse()
+	// database
+	db := getDb()
+	db.AutoMigrate(&Page{})
 
-	// db
-	db, err := database.Init(config.dsn)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
+	/// make sure index page is there
+	var page Page
+	db.Where(Page{CmsPage: "/"}).Attrs(Page{VersionId: 1, PageId: uuid.New(), Content: "# hello, world"}).FirstOrInit(&page)
+	db.Save(page)
+	db.Close()
 
-	// start
-	fmt.Println("# rhizome")
-	fmt.Printf("using database: %s\n", config.dsn)
+	// routes
+	routes := pat.New()
+	routes.Get("/:CmsPage", http.HandlerFunc(getCmsPage))
+	routes.Get("/", http.HandlerFunc(getCmsPage))
+	http.Handle("/", routes)
 
-	d1 := Document{
-		Id:      "1",
-		Title:   "Main",
-		Text:    "# hello, world",
-		Page:    "/Home",
-		Version: 1,
-		Created: time.Now(),
-		Updated: time.Now(),
-	}
-	database.UpdateDocument(&d1)
-	d2, err := database.GetDocument("1", 1)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%v\n", d2)
+	log.Printf("Starting server on :8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
