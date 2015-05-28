@@ -1,74 +1,56 @@
 package main
 
 import (
-	"code.google.com/p/go-uuid/uuid"
+	"flag"
 	"fmt"
-	"github.com/bmizerany/pat"
-	"github.com/jinzhu/gorm"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/microcosm-cc/bluemonday"
-	"github.com/russross/blackfriday"
-	"log"
+	"io/ioutil"
 	"net/http"
-	"time"
+	"os"
+	"path"
 )
 
-type Page struct {
-	Id        int
-	PageId    string
-	VersionId int
-	CmsPage   string
-	Content   string
-	Published time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt time.Time
+type Rhizome struct {
+	DestinationDir string
 }
 
-func getHtml(markdown string) string {
-	unsafe := blackfriday.MarkdownCommon([]byte(markdown))
-	return string(bluemonday.UGCPolicy().SanitizeBytes(unsafe))
-}
+func NewRhizome(destDir string, themeDir string) *Rhizome {
+	r := &Rhizome{
+		DestinationDir: destDir,
+	}
 
-func getDb() *gorm.DB {
-	db, err := gorm.Open("sqlite3", "rhizome.db")
+	err := os.MkdirAll(r.DestinationDir, 0777)
 	if err != nil {
-		log.Print(err)
+		panic(err)
 	}
-	db.LogMode(true)
-	return &db
+
+	r.renderPage("/index.html", "hello, world")
+
+	return r
 }
 
-func getCmsPage(w http.ResponseWriter, req *http.Request) {
-	cmsPage := "/" + req.URL.Query().Get(":CmsPage")
-	page := &Page{}
-	db := getDb()
+func (r *Rhizome) renderPage(filePath string, content string) error {
+	sitePath := path.Join(r.DestinationDir, filePath)
 
-	if db.Where("cms_page = ?", cmsPage).First(page).RecordNotFound() {
-		http.Error(w, "Page not found.", 404)
-		return
+	err := ioutil.WriteFile(sitePath, []byte(content), 0644)
+	if err != nil {
+		return err
 	}
 
-	fmt.Fprintf(w, getHtml(page.Content))
+	return nil
+}
+
+func (r *Rhizome) serve() {
+	renderedSite := http.NewServeMux()
+	renderedSite.Handle("/", http.FileServer(http.Dir(r.DestinationDir)))
+
+	fmt.Println("Listening on port 8080 for rendered site")
+	http.ListenAndServe(":8080", renderedSite)
 }
 
 func main() {
-	// database
-	db := getDb()
-	db.AutoMigrate(&Page{})
+	destinationDir := flag.String("destination", "_site", "Destination directory for rendered site")
+	flag.Parse()
 
-	/// make sure index page is there
-	var page Page
-	db.Where(Page{CmsPage: "/"}).Attrs(Page{VersionId: 1, PageId: uuid.New(), Content: "# hello, world"}).FirstOrInit(&page)
-	db.Save(page)
-	db.Close()
-
-	// routes
-	routes := pat.New()
-	routes.Get("/:CmsPage", http.HandlerFunc(getCmsPage))
-	routes.Get("/", http.HandlerFunc(getCmsPage))
-	http.Handle("/", routes)
-
-	log.Printf("Starting server on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	r := NewRhizome(*destinationDir, *themeDir)
+	r.serve()
 }
