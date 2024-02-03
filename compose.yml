@@ -1,0 +1,12 @@
+services:
+  database:
+    image: postgres
+    ports:
+      - 5432:5432
+    env_file:
+      - .env
+    healthcheck:
+      test: /usr/bin/pg_isready
+      interval: 5s
+      timeout: 10s
+      retries: 120

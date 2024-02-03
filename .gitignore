@@ -1,3 +1,4 @@
-*.db
-_site
-_theme
+tmp
+node_modules
+assets
+.env

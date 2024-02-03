@@ -1,0 +1,58 @@
+version: '3'
+dotenv: ['.env']
+tasks:
+  default:
+    cmds:
+      - docker compose up --wait
+      - go run github.com/cosmtrek/air@latest
+  
+  pre:
+    deps: [templ]
+  
+  templ:
+    cmds:
+      - go run github.com/a-h/templ/cmd/templ@latest generate
+
+  sql:
+    cmds:
+      - go run github.com/amacneil/dbmate@latest --schema-file=internal/db/schema.sql --migrations-dir=internal/db/migrations dump
+      - go run github.com/sqlc-dev/sqlc/cmd/sqlc@latest generate
+
+  post:
+    cmds:
+      - docker compose down
+  
+  lint:
+    cmds:
+      - golangci-lint run -E gosec
+      - go vet ./...
+      #- go run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-ST1000,-U1000 ./...
+      #- go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+      #- go run golang.org/x/tools/cmd/deadcode@latest ./...
+  
+  tidy:
+    cmds:
+      - go fmt ./...
+      - go mod tidy -v
+
+  reset:
+    cmds:
+      - go run github.com/amacneil/dbmate@latest --no-dump-schema --migrations-dir=internal/db/migrations rollback
+      - go run github.com/amacneil/dbmate@latest --no-dump-schema --migrations-dir=internal/db/migrations up
+
+  psql:
+    cmds:
+      - psql $DATABASE_URL
+
+  seed:
+    cmds:
+      - go run ./cmd/seed
+
+  test:
+    deps: [lint]
+    cmds:
+      - go test -short ./...
+
+  integration:
+    cmds:
+      - go test ./...
