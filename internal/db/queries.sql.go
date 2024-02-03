@@ -37,9 +37,9 @@ RETURNING page_id, title, slug, content, created_at, updated_at
 `
 
 type SavePageParams struct {
-	Slug    string
-	Title   string
-	Content string
+	Slug    string `json:"slug"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
 }
 
 func (q *Queries) SavePage(ctx context.Context, arg SavePageParams) error {

@@ -9,14 +9,10 @@ import (
 )
 
 type Page struct {
-	PageID    int32
-	Title     string
-	Slug      string
-	Content   string
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
-}
-
-type SchemaMigration struct {
-	Version string
+	PageID    int32              `json:"page_id"`
+	Title     string             `json:"title"`
+	Slug      string             `json:"slug"`
+	Content   string             `json:"content"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
