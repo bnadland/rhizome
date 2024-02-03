@@ -11,7 +11,7 @@ import (
 	"github.com/bnadland/rhizome/internal/views"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func page(q *db.Queries) http.HandlerFunc {
@@ -45,13 +45,12 @@ func Run(addr string) error {
 	if err := db.Migrate(); err != nil {
 		return err
 	}
-	ctx := context.Background()
-	conn, err := pgx.Connect(ctx, os.Getenv("DATABASE_URL"))
+	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return err
 	}
-	defer conn.Close(ctx)
-	q := db.New(conn)
+	defer pool.Close()
+	q := db.New(pool)
 	r := GetRouter(q)
 	s := &http.Server{
 		Addr:           addr,
