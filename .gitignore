@@ -1,4 +1,4 @@
 tmp
 node_modules
-assets
+internal/assets/static
 .env
