@@ -14,18 +14,27 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+func notFound() http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		if err := views.NotFound().Render(req.Context(), w); err != nil {
+			slog.Error(err.Error())
+		}
+	}
+
+}
+
 func page(q *db.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		slug := chi.URLParam(req, "slug")
+
 		page, err := q.GetPageBySlug(req.Context(), slug)
 		if err != nil {
 			slog.Error(err.Error())
-			w.WriteHeader(http.StatusNotFound)
-			if err := views.NotFound().Render(req.Context(), w); err != nil {
-				slog.Error(err.Error())
-			}
+			notFound()(w, req)
 			return
 		}
+
 		if err := views.Page(page).Render(req.Context(), w); err != nil {
 			slog.Error(err.Error())
 		}
@@ -36,6 +45,7 @@ func GetRouter(q *db.Queries) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.NotFound(notFound())
 	r.Get("/p/{slug}", page(q))
 	r.Handle("/", http.RedirectHandler("/p/home", http.StatusMovedPermanently))
 	return r
