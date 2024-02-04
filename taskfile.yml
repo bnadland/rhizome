@@ -3,15 +3,24 @@ dotenv: ['.env']
 tasks:
   default:
     cmds:
+      - npm install
       - docker compose up --wait
       - go run github.com/cosmtrek/air@latest
   
   pre:
-    deps: [templ]
+    deps: [templ, css, js]
   
   templ:
     cmds:
       - go run github.com/a-h/templ/cmd/templ@latest generate
+
+  css:
+    cmds:
+      - npx tailwindcss -i ./frontend/app.css -o ./internal/assets/static/app.css
+
+  js:
+    cmds:
+      - npx esbuild ./frontend/app.js --bundle --outfile=./internal/assets/static/app.js
 
   sql:
     cmds:

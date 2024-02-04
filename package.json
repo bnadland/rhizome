@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "esbuild": "^0.20.0",
+    "htmx.org": "^1.9.10",
+    "tailwindcss": "^3.4.1"
+  }
+}

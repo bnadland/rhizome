@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/bnadland/rhizome/internal/assets"
 	"github.com/bnadland/rhizome/internal/db"
 	"github.com/bnadland/rhizome/internal/views"
 	"github.com/go-chi/chi/v5"
@@ -48,6 +49,7 @@ func GetRouter(q *db.Queries) http.Handler {
 	r.Use(middleware.Compress(5, "text/html", "text/css", "text/javascript"))
 	r.NotFound(notFound())
 	r.Get("/p/{slug}", page(q))
+	r.Handle("/static/*", assets.Assets())
 	r.Handle("/", http.RedirectHandler("/p/home", http.StatusMovedPermanently))
 	return r
 }
