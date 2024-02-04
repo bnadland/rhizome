@@ -55,20 +55,21 @@ func Run(addr string) error {
 	if err := db.Migrate(); err != nil {
 		return err
 	}
+
 	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return err
 	}
 	defer pool.Close()
-	q := db.New(pool)
-	r := GetRouter(q)
+
 	s := &http.Server{
 		Addr:           addr,
-		Handler:        r,
+		Handler:        GetRouter(db.New(pool)),
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
+
 	slog.Info("listening", "addr", addr)
 	return s.ListenAndServe()
 }
