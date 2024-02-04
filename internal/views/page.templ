@@ -3,13 +3,14 @@ package views
 import "github.com/bnadland/rhizome/internal/db"
 import "github.com/bnadland/rhizome/internal/markdown"
 
-
 templ Page(page db.Page) {
-	@Layout() {
+	@Layout(page.Title) {
 		<main class="container mx-auto mt-8">
 			<article>
 				<h1 class="text-3xl">{ page.Title }</h1>
-				<section class="mt-4 prose">@templ.Raw(markdown.Markdown(page.Content))</section>
+				<section class="mt-4 prose">
+					@templ.Raw(markdown.Markdown(page.Content))
+				</section>
 			</article>
 		</main>
 	}

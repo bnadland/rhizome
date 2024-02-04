@@ -1,13 +1,14 @@
 package views
 
-templ Layout() {
+templ Layout(title string) {
 	<!DOCTYPE html>
-	<html>
+	<html lang="en">
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<link href="/static/app.css" rel="stylesheet"/>
 			<script src="/static/app.js" defer></script>
+			<title>{title}</title>
 		</head>
 		<body>
 			{ children... }
@@ -16,7 +17,7 @@ templ Layout() {
 }
 
 templ NotFound() {
-	@Layout() {
+	@Layout("Not found") {
 		<div class="min-h-screen flex flex-grow items-center justify-center bg-gray-50">
 			<div class="rounded-lg bg-white p-8 text-center shadow-xl">
 				<h1 class="mb-4 text-4xl font-bold">404</h1>
