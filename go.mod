@@ -8,6 +8,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/jackc/pgx/v5 v5.5.3
 	github.com/microcosm-cc/bluemonday v1.0.26
+	github.com/ory/graceful v0.1.3
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.27.1
 	github.com/yuin/goldmark v1.7.0
@@ -23,6 +24,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect

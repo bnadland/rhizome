@@ -5,13 +5,13 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/bnadland/rhizome/internal/db"
 	"github.com/bnadland/rhizome/internal/views"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/ory/graceful"
 )
 
 func notFound() http.HandlerFunc {
@@ -62,14 +62,15 @@ func Run(addr string) error {
 	}
 	defer pool.Close()
 
-	s := &http.Server{
-		Addr:           addr,
-		Handler:        GetRouter(db.New(pool)),
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
-	}
+	server := graceful.WithDefaults(&http.Server{
+		Addr:    addr,
+		Handler: GetRouter(db.New(pool)),
+	})
 
 	slog.Info("listening", "addr", addr)
-	return s.ListenAndServe()
+	if err := graceful.Graceful(server.ListenAndServe, server.Shutdown); err != nil {
+		return err
+	}
+	slog.Info("shutdown gracefully")
+	return nil
 }
