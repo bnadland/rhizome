@@ -45,6 +45,7 @@ func GetRouter(q *db.Queries) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(middleware.Compress(5, "text/html", "text/css", "text/javascript"))
 	r.NotFound(notFound())
 	r.Get("/p/{slug}", page(q))
 	r.Handle("/", http.RedirectHandler("/p/home", http.StatusMovedPermanently))
