@@ -55,7 +55,6 @@ tasks:
       - go run ./cmd/seed
 
   test:
-    deps: [lint]
     cmds:
       - go test -short ./...
 
