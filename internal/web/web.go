@@ -30,7 +30,7 @@ func page(q *db.Queries) http.HandlerFunc {
 
 		page, err := q.GetPageBySlug(req.Context(), slug)
 		if err != nil {
-			slog.Error(err.Error())
+			slog.Warn(err.Error(), "GetPageBySlug", slug)
 			notFound()(w, req)
 			return
 		}
