@@ -5,7 +5,7 @@ import "github.com/bnadland/rhizome/internal/markdown"
 
 templ Page(page db.Page) {
 	@Layout(page.Title) {
-		<main class="container mx-auto mt-8">
+		<main class="container mx-auto sm:mx-8 mt-8">
 			<article>
 				<h1 class="text-3xl">{ page.Title }</h1>
 				<section class="mt-4 prose">
