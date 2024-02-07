@@ -5,13 +5,16 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   golangci:
     name: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: '1.21.6'
           cache: false
@@ -19,4 +22,6 @@ jobs:
         with:
           node-version: '21.5.0'
       - run: go run github.com/go-task/task/v3/cmd/task@latest build
-      
+      - uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
