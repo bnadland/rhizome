@@ -41,6 +41,14 @@ tasks:
       - go fmt ./...
       - go mod tidy -v
 
+  build:
+    cmds:
+      - npm install
+      - task: pre
+      - task: lint
+      - task: test
+      - go build ./cmd/rhizome
+
   reset:
     cmds:
       - go run github.com/amacneil/dbmate@latest --no-dump-schema --migrations-dir=internal/db/migrations rollback
