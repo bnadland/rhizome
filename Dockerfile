@@ -11,7 +11,7 @@ COPY --from=frontend /app/internal/assets/static/ ./internal/assets/static/
 RUN go run github.com/go-task/task/v3/cmd/task@latest templ && go build -o /app/rhizome ./cmd/rhizome
 
 FROM scratch
-WORKDIR /
+WORKDIR /app
 COPY --from=backend /app/rhizome /app/rhizome
 EXPOSE 3000
 ENTRYPOINT ["/app/rhizome"]
