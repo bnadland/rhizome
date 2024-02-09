@@ -5,7 +5,6 @@ import (
 	"io"
 	"log/slog"
 	"net/url"
-	"os"
 
 	"github.com/amacneil/dbmate/v2/pkg/dbmate"
 	_ "github.com/amacneil/dbmate/v2/pkg/driver/postgres"
@@ -14,12 +13,12 @@ import (
 //go:embed migrations/*.sql
 var migrations embed.FS
 
-func Migrate() error {
-	databaseURL, err := url.Parse(os.Getenv("DATABASE_URL"))
+func Migrate(databaseURL string) error {
+	dsn, err := url.Parse(databaseURL)
 	if err != nil {
 		return err
 	}
-	db := dbmate.New(databaseURL)
+	db := dbmate.New(dsn)
 	db.AutoDumpSchema = false
 	db.Log = io.Discard
 	db.FS = migrations

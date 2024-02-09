@@ -5,6 +5,7 @@ go 1.22.0
 require (
 	github.com/a-h/templ v0.2.543
 	github.com/amacneil/dbmate/v2 v2.11.0
+	github.com/caarlos0/env/v10 v10.0.0
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/jackc/pgx/v5 v5.5.3
 	github.com/microcosm-cc/bluemonday v1.0.26

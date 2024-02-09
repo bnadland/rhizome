@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
@@ -65,12 +64,12 @@ func NewServer(addr string, router http.Handler) *http.Server {
 	}
 }
 
-func Run(ctx context.Context, addr string) error {
-	if err := db.Migrate(); err != nil {
+func Run(ctx context.Context, addr string, databaseURL string) error {
+	if err := db.Migrate(databaseURL); err != nil {
 		return err
 	}
 
-	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	pool, err := pgxpool.New(context.Background(), databaseURL)
 	if err != nil {
 		return err
 	}
