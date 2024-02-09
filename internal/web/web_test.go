@@ -11,19 +11,9 @@ import (
 
 func TestHomepage(t *testing.T) {
 	t.Parallel()
-	r := web.GetRouter(nil)
+	r := web.NewRouter(nil)
 	req, _ := http.NewRequest("GET", "/", nil)
 	resp := httptest.NewRecorder()
 	r.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusMovedPermanently, resp.Code)
-}
-
-func TestHomeSlug(t *testing.T) {
-	t.Skip()
-	t.Parallel()
-	r := web.GetRouter(nil)
-	req, _ := http.NewRequest("GET", "/p/home", nil)
-	resp := httptest.NewRecorder()
-	r.ServeHTTP(resp, req)
-	assert.Equal(t, http.StatusOK, resp.Code)
 }
