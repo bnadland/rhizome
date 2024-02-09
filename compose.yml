@@ -6,7 +6,7 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: /usr/bin/pg_isready
+      test: /usr/bin/pg_isready -U rhizome
       interval: 5s
       timeout: 10s
       retries: 120
