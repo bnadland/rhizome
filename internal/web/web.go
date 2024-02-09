@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/bnadland/rhizome/internal/assets"
 	"github.com/bnadland/rhizome/internal/db"
@@ -66,6 +67,11 @@ func Run(ctx context.Context, addr string) error {
 	server := &http.Server{
 		Addr:    addr,
 		Handler: GetRouter(db.New(pool)),
+
+		ReadTimeout:       1 * time.Second,
+		WriteTimeout:      1 * time.Second,
+		IdleTimeout:       30 * time.Second,
+		ReadHeaderTimeout: 2 * time.Second,
 	}
 	go func() {
 		slog.Info("listening", "addr", server.Addr)
