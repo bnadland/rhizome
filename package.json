@@ -3,5 +3,9 @@
     "esbuild": "^0.20.0",
     "htmx.org": "^1.9.10",
     "tailwindcss": "^3.4.1"
+  },
+  "scripts": {
+    "css": "tailwindcss -i ./frontend/app.css --minify -o ./internal/assets/static/app.css",
+    "js": "esbuild ./frontend/app.js --bundle --minify --outfile=./internal/assets/static/app.js"
   }
 }

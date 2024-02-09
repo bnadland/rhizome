@@ -16,11 +16,11 @@ tasks:
 
   css:
     cmds:
-      - npx tailwindcss -i ./frontend/app.css --minify -o ./internal/assets/static/app.css
+      - npm run css
 
   js:
     cmds:
-      - npx esbuild ./frontend/app.js --bundle --minify --outfile=./internal/assets/static/app.js
+      - npm run js
 
   sql:
     cmds:
