@@ -15,12 +15,10 @@ import (
 	"github.com/ory/graceful"
 )
 
-func notFound() http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-		if err := views.NotFound().Render(req.Context(), w); err != nil {
-			slog.Error(err.Error())
-		}
+func notFound(w http.ResponseWriter, req *http.Request) {
+	w.WriteHeader(http.StatusNotFound)
+	if err := views.NotFound().Render(req.Context(), w); err != nil {
+		slog.Error(err.Error())
 	}
 
 }
@@ -32,7 +30,7 @@ func page(q *db.Queries) http.HandlerFunc {
 		page, err := q.GetPageBySlug(req.Context(), slug)
 		if err != nil {
 			slog.Warn(err.Error(), "GetPageBySlug", slug)
-			notFound()(w, req)
+			notFound(w, req)
 			return
 		}
 
@@ -47,7 +45,7 @@ func GetRouter(q *db.Queries) http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Compress(5, "text/html", "text/css", "text/javascript"))
-	r.NotFound(notFound())
+	r.NotFound(func(w http.ResponseWriter, req *http.Request) { notFound(w, req) })
 	r.Get("/p/{slug}", page(q))
 	r.Handle("/static/*", assets.Assets())
 	r.Handle("/", http.RedirectHandler("/p/home", http.StatusMovedPermanently))
