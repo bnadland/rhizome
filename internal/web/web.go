@@ -41,7 +41,7 @@ func page(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func GetRouter(q *db.Queries) http.Handler {
+func NewRouter(q *db.Queries) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
@@ -51,6 +51,18 @@ func GetRouter(q *db.Queries) http.Handler {
 	r.Handle("/static/*", assets.Assets())
 	r.Handle("/", http.RedirectHandler("/p/home", http.StatusMovedPermanently))
 	return r
+}
+
+func NewServer(addr string, router http.Handler) *http.Server {
+	return &http.Server{
+		Addr:    addr,
+		Handler: router,
+
+		ReadTimeout:       1 * time.Second,
+		WriteTimeout:      1 * time.Second,
+		IdleTimeout:       30 * time.Second,
+		ReadHeaderTimeout: 2 * time.Second,
+	}
 }
 
 func Run(ctx context.Context, addr string) error {
@@ -64,15 +76,9 @@ func Run(ctx context.Context, addr string) error {
 	}
 	defer pool.Close()
 
-	server := &http.Server{
-		Addr:    addr,
-		Handler: GetRouter(db.New(pool)),
+	router := NewRouter(db.New(pool))
+	server := NewServer(addr, router)
 
-		ReadTimeout:       1 * time.Second,
-		WriteTimeout:      1 * time.Second,
-		IdleTimeout:       30 * time.Second,
-		ReadHeaderTimeout: 2 * time.Second,
-	}
 	go func() {
 		slog.Info("listening", "addr", server.Addr)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
