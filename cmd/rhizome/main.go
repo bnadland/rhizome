@@ -1,13 +1,21 @@
 package main
 
 import (
-	"log"
+	"context"
+	"log/slog"
+	"os"
+	"os/signal"
 
 	"github.com/bnadland/rhizome/internal/web"
 )
 
 func main() {
-	if err := web.Run(":3000"); err != nil {
-		log.Fatal(err)
+	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
+	defer cancel()
+
+	if err := web.Run(ctx, ":3000"); err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }

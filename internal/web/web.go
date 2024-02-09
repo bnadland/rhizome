@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/bnadland/rhizome/internal/assets"
 	"github.com/bnadland/rhizome/internal/db"
@@ -12,7 +13,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/ory/graceful"
 )
 
 func notFound(w http.ResponseWriter, req *http.Request) {
@@ -52,7 +52,7 @@ func GetRouter(q *db.Queries) http.Handler {
 	return r
 }
 
-func Run(addr string) error {
+func Run(ctx context.Context, addr string) error {
 	if err := db.Migrate(); err != nil {
 		return err
 	}
@@ -63,15 +63,26 @@ func Run(addr string) error {
 	}
 	defer pool.Close()
 
-	server := graceful.WithDefaults(&http.Server{
+	server := &http.Server{
 		Addr:    addr,
 		Handler: GetRouter(db.New(pool)),
-	})
-
-	slog.Info("listening", "addr", addr)
-	if err := graceful.Graceful(server.ListenAndServe, server.Shutdown); err != nil {
-		return err
 	}
-	slog.Info("shutdown gracefully")
+	go func() {
+		slog.Info("listening", "addr", server.Addr)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error(err.Error())
+		}
+	}()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		<-ctx.Done()
+		if err := server.Shutdown(ctx); err != nil {
+			slog.Error(err.Error())
+		}
+	}()
+	wg.Wait()
+	slog.Info("shutdown")
 	return nil
 }
