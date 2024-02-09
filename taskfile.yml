@@ -49,6 +49,13 @@ tasks:
       - task: test
       - go build ./cmd/rhizome
 
+  clean:
+    cmds:
+      - rm ./rhizome
+      - rm ./internal/assets/static/*
+      - rm -r ./tmp
+      - rm -r ./node_modules
+
   reset:
     cmds:
       - go run github.com/amacneil/dbmate@latest --no-dump-schema --migrations-dir=internal/db/migrations rollback
