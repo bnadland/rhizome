@@ -1,3 +1,4 @@
+# go install github.com/go-task/task/v3/cmd/task@latest
 version: '3'
 dotenv: ['.env']
 tasks:
@@ -49,12 +50,13 @@ tasks:
       - task: test
       - go build ./cmd/rhizome
 
+  run:
+    cmds:
+      - ./rhizome
+
   clean:
     cmds:
       - rm ./rhizome
-      - rm ./internal/assets/static/*
-      - rm -r ./tmp
-      - rm -r ./node_modules
 
   reset:
     cmds:
