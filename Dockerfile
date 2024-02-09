@@ -3,7 +3,7 @@ WORKDIR /app
 COPY ./ ./
 RUN npm install && npm run css && npm run js
 
-FROM golang:1.21.6 as backend
+FROM golang:1.22.0 as backend
 WORKDIR /app
 ENV CGO_ENABLED 0
 COPY ./ ./
