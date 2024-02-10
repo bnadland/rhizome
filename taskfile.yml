@@ -34,7 +34,7 @@ tasks:
   
   lint:
     cmds:
-      - go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2 run -E gosec
+      - go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2 run -E gosec -E gofmt -E goimports -E sloglint
       - go vet ./...
   
   tidy:
