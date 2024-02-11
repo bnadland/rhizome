@@ -1,10 +1,9 @@
-# go install github.com/go-task/task/v3/cmd/task@latest
+# go run github.com/go-task/task/v3/cmd/task@latest deps
 version: '3'
 dotenv: ['.env']
 tasks:
   default:
     cmds:
-      - npm install
       - docker compose up --wait
       - go run github.com/cosmtrek/air@latest
   
@@ -22,6 +21,18 @@ tasks:
   js:
     cmds:
       - npm run js
+
+  deps:
+    cmds:
+      - asdf install
+      - npm install
+      - go install github.com/go-task/task/v3/cmd/task@latest
+      - go install github.com/cosmtrek/air@latest
+      - go install github.com/a-h/templ/cmd/templ@latest
+      - go install github.com/amacneil/dbmate@latest
+      - go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2
+      - asdf reshim golang
 
   sql:
     cmds:
