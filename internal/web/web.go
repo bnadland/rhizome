@@ -14,26 +14,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func page(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		slug := chi.URLParam(req, "slug")
-
-		page, err := q.GetPageBySlug(req.Context(), slug)
-		if err != nil {
-			slog.Warn(err.Error(), "GetPageBySlug", slug)
-			w.WriteHeader(http.StatusNotFound)
-			if err := NotFound().Render(req.Context(), w); err != nil {
-				slog.Error(err.Error())
-			}
-			return
-		}
-
-		if err := Page(page).Render(req.Context(), w); err != nil {
-			slog.Error(err.Error())
-		}
-	}
-}
-
 func NewRouter(q *db.Queries) http.Handler {
 	r := chi.NewRouter()
 
