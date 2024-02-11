@@ -2,9 +2,10 @@ package web
 
 import "github.com/bnadland/rhizome/internal/db"
 import "github.com/bnadland/rhizome/internal/markdown"
+import "github.com/bnadland/rhizome/internal/assets"
 
 templ Page(page db.Page) {
-	@Layout(page.Title) {
+	@assets.Layout(page.Title) {
 		<main class="container mx-auto sm:mx-8 mt-8">
 			<article>
 				<h1 class="text-3xl">{ page.Title }</h1>
