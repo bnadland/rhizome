@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 
@@ -8,7 +9,11 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func page(q *db.Queries) http.HandlerFunc {
+type pager interface {
+	GetPageBySlug(context.Context, string) (db.Page, error)
+}
+
+func page(q pager) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		slug := chi.URLParam(req, "slug")
 
