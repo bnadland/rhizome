@@ -9,7 +9,6 @@ import (
 
 	"github.com/bnadland/rhizome/internal/assets"
 	"github.com/bnadland/rhizome/internal/db"
-	"github.com/bnadland/rhizome/internal/views"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -22,11 +21,14 @@ func page(q *db.Queries) http.HandlerFunc {
 		page, err := q.GetPageBySlug(req.Context(), slug)
 		if err != nil {
 			slog.Warn(err.Error(), "GetPageBySlug", slug)
-			notFound(w, req)
+			w.WriteHeader(http.StatusNotFound)
+			if err := NotFound().Render(req.Context(), w); err != nil {
+				slog.Error(err.Error())
+			}
 			return
 		}
 
-		if err := views.Page(page).Render(req.Context(), w); err != nil {
+		if err := Page(page).Render(req.Context(), w); err != nil {
 			slog.Error(err.Error())
 		}
 	}
@@ -34,14 +36,8 @@ func page(q *db.Queries) http.HandlerFunc {
 
 func notFound(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
-	if err := views.NotFound().Render(req.Context(), w); err != nil {
+	if err := NotFound().Render(req.Context(), w); err != nil {
 		slog.Error(err.Error())
-	}
-}
-
-func notFoundHandlerFunc() http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		notFound(w, req)
 	}
 }
 
@@ -52,7 +48,7 @@ func NewRouter(q *db.Queries) http.Handler {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Compress(5, "text/html", "text/css", "text/javascript"))
 
-	r.NotFound(notFoundHandlerFunc())
+	r.NotFound(notFound)
 
 	r.Get("/p/{slug}", page(q))
 	r.Handle("/static/*", assets.Assets())
