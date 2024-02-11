@@ -51,6 +51,7 @@ tasks:
   tidy:
     cmds:
       - go fmt ./...
+      - templ fmt .
       - go mod tidy -v
 
   build:
