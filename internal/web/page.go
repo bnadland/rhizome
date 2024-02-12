@@ -6,11 +6,12 @@ import (
 
 	"github.com/bnadland/rhizome/internal/db"
 	"github.com/bnadland/rhizome/internal/views"
+	"github.com/go-chi/chi/v5"
 )
 
 func PageHandler(q *db.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		slug := req.PathValue("slug")
+		slug := chi.URLParam(req, "slug")
 
 		page, err := q.GetPageBySlug(req.Context(), slug)
 		if err != nil {

@@ -6,17 +6,20 @@ require (
 	github.com/a-h/templ v0.2.543
 	github.com/amacneil/dbmate/v2 v2.11.0
 	github.com/caarlos0/env/v10 v10.0.0
-	github.com/gorilla/handlers v1.5.2
+	github.com/go-chi/chi/v5 v5.0.11
 	github.com/jackc/pgx/v5 v5.5.3
 	github.com/microcosm-cc/bluemonday v1.0.26
 	github.com/stretchr/testify v1.8.4
 	github.com/yuin/goldmark v1.7.0
+	go.abhg.dev/goldmark/hashtag v0.3.1
+	go.abhg.dev/goldmark/toc v0.9.0
+	go.abhg.dev/goldmark/wikilink v0.5.0
 )
 
 require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/felixge/httpsnoop v1.0.3 // indirect
+	github.com/forPelevin/gomoji v1.1.3 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
@@ -24,6 +27,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/net v0.17.0 // indirect

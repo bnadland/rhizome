@@ -19,9 +19,14 @@ func main() {
 	q := db.New(conn)
 
 	if err = q.SavePage(ctx, db.SavePageParams{
-		Title:   "Home",
-		Slug:    "home",
-		Content: "hello, world",
+		Title: "Home",
+		Slug:  "home",
+		Content: `# Home
+		
+hello, [[world]]
+		
+#public #programming
+		`,
 	}); err != nil {
 		log.Fatal(err)
 	}
