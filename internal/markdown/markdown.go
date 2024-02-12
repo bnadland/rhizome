@@ -50,11 +50,11 @@ func Hashtags(content string) ([]string, error) {
 	md := renderer()
 	doc := md.Parser().Parse(text.NewReader([]byte(content)))
 	var hashtags []string
-	ast.Walk(doc, func(node ast.Node, enter bool) (ast.WalkStatus, error) {
+	err := ast.Walk(doc, func(node ast.Node, enter bool) (ast.WalkStatus, error) {
 		if n, ok := node.(*hashtag.Node); ok && enter {
 			hashtags = append(hashtags, string(n.Tag))
 		}
 		return ast.WalkContinue, nil
 	})
-	return hashtags, nil
+	return hashtags, err
 }
