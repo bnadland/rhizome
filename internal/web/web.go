@@ -4,29 +4,24 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/bnadland/rhizome/internal/assets"
 	"github.com/bnadland/rhizome/internal/db"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gorilla/handlers"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func NewRouter(q *db.Queries) http.Handler {
-	r := chi.NewRouter()
+	m := http.NewServeMux()
 
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Compress(5, "text/html", "text/css", "text/javascript"))
+	m.HandleFunc("GET /p/{slug}", PageHandler(q))
+	m.Handle("/static/", assets.AssetHandler())
+	m.Handle("/", http.RedirectHandler("/p/home", http.StatusFound))
 
-	r.NotFound(NotFoundHandler())
-
-	r.Get("/p/{slug}", PageHandler(q))
-	r.Handle("/static/*", assets.AssetHandler())
-	r.Handle("/", http.RedirectHandler("/p/home", http.StatusFound))
-	return r
+	return handlers.RecoveryHandler()(handlers.LoggingHandler(os.Stdout, handlers.CompressHandler(m)))
 }
 
 func NewServer(addr string, router http.Handler) *http.Server {
