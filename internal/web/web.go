@@ -9,7 +9,6 @@ import (
 
 	"github.com/bnadland/rhizome/internal/assets"
 	"github.com/bnadland/rhizome/internal/db"
-	"github.com/bnadland/rhizome/internal/wiki"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -22,9 +21,9 @@ func NewRouter(q *db.Queries) http.Handler {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Compress(5, "text/html", "text/css", "text/javascript"))
 
-	r.NotFound(assets.NotFoundHandler())
+	r.NotFound(NotFoundHandler())
 
-	r.Get("/p/{slug}", wiki.PageHandler(q))
+	r.Get("/p/{slug}", PageHandler(q))
 	r.Handle("/static/*", assets.AssetHandler())
 	r.Handle("/", http.RedirectHandler("/p/home", http.StatusFound))
 	return r
