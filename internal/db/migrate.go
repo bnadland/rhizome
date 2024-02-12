@@ -11,7 +11,7 @@ import (
 )
 
 //go:embed migrations/*.sql
-var migrations embed.FS
+var Migrations embed.FS
 
 func Migrate(databaseURL string) error {
 	dsn, err := url.Parse(databaseURL)
@@ -21,7 +21,7 @@ func Migrate(databaseURL string) error {
 	db := dbmate.New(dsn)
 	db.AutoDumpSchema = false
 	db.Log = io.Discard
-	db.FS = migrations
+	db.FS = Migrations
 	db.MigrationsDir = []string{"migrations"}
 	slog.Info("applying migrations")
 	return db.CreateAndMigrate()
