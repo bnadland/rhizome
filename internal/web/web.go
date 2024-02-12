@@ -26,7 +26,7 @@ func NewRouter(q *db.Queries) http.Handler {
 
 	r.Get("/p/{slug}", wiki.PageHandler(q))
 	r.Handle("/static/*", assets.AssetHandler())
-	r.Handle("/", http.RedirectHandler("/p/home", http.StatusMovedPermanently))
+	r.Handle("/", http.RedirectHandler("/p/home", http.StatusFound))
 	return r
 }
 

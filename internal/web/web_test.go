@@ -15,5 +15,5 @@ func TestHomepage(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/", nil)
 	resp := httptest.NewRecorder()
 	r.ServeHTTP(resp, req)
-	assert.Equal(t, http.StatusMovedPermanently, resp.Code)
+	assert.Equal(t, http.StatusFound, resp.Code)
 }
